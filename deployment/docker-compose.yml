@@ -1,0 +1,29 @@
+
+services:
+  general-auth-service:
+    image: ${CI_REGISTRY_IMAGE}:${IMAGE_TAG:-latest}
+    container_name: general-auth-service
+    ports:
+      - "8081:8081"
+    restart: unless-stopped
+    networks:
+      - app-network
+    volumes:
+      - ./logs:/app/logs:rw
+      - ./config:/app/config:ro
+    environment:
+      - TZ=Asia/Jakarta
+      - APP_ENV=development
+    # Note: Distroless images don't have shell/curl/wget for health checks
+    # Monitor container health through application metrics or external monitoring
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+networks:
+  app-network:
+    external: true
+    name: gateway_kong-dev-net
+

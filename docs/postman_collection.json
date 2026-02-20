@@ -1,0 +1,421 @@
+{
+	"info": {
+		"_postman_id": "provid-auth-api",
+		"name": "Provid Auth API",
+		"description": "Authentication API endpoints for Provid Backend\n\n## Authentication Flow\n\n### First-time Login / Session Expired\n1. POST /auth/login (email + password) → returns challenge_token\n2. POST /auth/login-pin (challenge_token + PIN) → returns access_token + refresh_token\n\n### Quick Unlock (Active Session)\n1. POST /auth/login-pin (refresh_token + PIN) → returns new tokens\n\n### Registration Flow\n1. POST /auth/register (step 1: email, fullname, date)\n2. POST /auth/register (step 2: password)\n3. POST /auth/send-otp (verify_email)\n4. POST /auth/validate-otp\n5. POST /auth/register-pin",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8080",
+			"type": "string"
+		},
+		{
+			"key": "access_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "refresh_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "challenge_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "otp_token",
+			"value": "",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "Registration",
+			"item": [
+				{
+					"name": "Register - Step 1 (Validate Email)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"fullname\": \"John Doe\",\n    \"email\": \"johndoe@example.com\",\n    \"date_of_birth\": \"1990-01-15\",\n    \"step\": 1\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/register",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "register"]
+						},
+						"description": "Step 1: Validate email availability and basic info"
+					},
+					"response": []
+				},
+				{
+					"name": "Register - Step 2 (Create Account)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"fullname\": \"John Doe\",\n    \"email\": \"johndoe@example.com\",\n    \"date_of_birth\": \"1990-01-15\",\n    \"password\": \"SecurePass123\",\n    \"confirmation_password\": \"SecurePass123\",\n    \"step\": 2\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/register",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "register"]
+						},
+						"description": "Step 2: Create account with password. An OTP will be sent to email for verification."
+					},
+					"response": []
+				},
+				{
+					"name": "Register PIN",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"user_id\": \"user-uuid-here\",\n    \"pin\": \"123456\",\n    \"confirmation_pin\": \"123456\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/register-pin",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "register-pin"]
+						},
+						"description": "Register a 6-digit PIN for the user. Email must be verified first."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "OTP",
+			"item": [
+				{
+					"name": "Send OTP - Verify Email",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"johndoe@example.com\",\n    \"purpose\": \"verify_email\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/send-otp",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "send-otp"]
+						},
+						"description": "Send OTP for email verification"
+					},
+					"response": []
+				},
+				{
+					"name": "Send OTP - Password Reset",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"johndoe@example.com\",\n    \"purpose\": \"password_reset\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/send-otp",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "send-otp"]
+						},
+						"description": "Send OTP for password reset"
+					},
+					"response": []
+				},
+				{
+					"name": "Validate OTP - Verify Email",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"if (jsonData.data && jsonData.data.token) {",
+									"    pm.collectionVariables.set('otp_token', jsonData.data.token);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"johndoe@example.com\",\n    \"otp\": \"123456\",\n    \"purpose\": \"verify_email\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/validate-otp",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "validate-otp"]
+						},
+						"description": "Validate OTP for email verification"
+					},
+					"response": []
+				},
+				{
+					"name": "Validate OTP - Password Reset",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"if (jsonData.data && jsonData.data.token) {",
+									"    pm.collectionVariables.set('otp_token', jsonData.data.token);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"johndoe@example.com\",\n    \"otp\": \"123456\",\n    \"purpose\": \"password_reset\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/validate-otp",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "validate-otp"]
+						},
+						"description": "Validate OTP for password reset. Returns a token for change password."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Login with Password",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"if (jsonData.data && jsonData.data.challenge_token) {",
+									"    pm.collectionVariables.set('challenge_token', jsonData.data.challenge_token);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"johndoe@example.com\",\n    \"password\": \"SecurePass123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/login",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "login"]
+						},
+						"description": "Login with email and password. Returns a challenge_token for PIN verification.\n\nPossible responses:\n- Success: challenge_token (proceed to Login PIN)\n- Error type 'verify_email': Email not verified\n- Error type 'pin_registration': PIN not registered"
+					},
+					"response": []
+				},
+				{
+					"name": "Login with PIN (Challenge Token)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"if (jsonData.data) {",
+									"    if (jsonData.data.acc) {",
+									"        pm.collectionVariables.set('access_token', jsonData.data.acc);",
+									"    }",
+									"    if (jsonData.data.ref) {",
+									"        pm.collectionVariables.set('refresh_token', jsonData.data.ref);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-Device-ID",
+								"value": "postman-test-device"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"challenge_token\": \"{{challenge_token}}\",\n    \"pin\": \"123456\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/login-pin",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "login-pin"]
+						},
+						"description": "Complete login with PIN after password authentication.\n\nUse the challenge_token from Login with Password response."
+					},
+					"response": []
+				},
+				{
+					"name": "Login with PIN (Quick Unlock)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"if (jsonData.data) {",
+									"    if (jsonData.data.acc) {",
+									"        pm.collectionVariables.set('access_token', jsonData.data.acc);",
+									"    }",
+									"    if (jsonData.data.ref) {",
+									"        pm.collectionVariables.set('refresh_token', jsonData.data.ref);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-Device-ID",
+								"value": "postman-test-device"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"refresh_token\": \"{{refresh_token}}\",\n    \"pin\": \"123456\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/login-pin",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "login-pin"]
+						},
+						"description": "Quick unlock using refresh token and PIN.\n\nUse this when the user has an active session (refresh token not expired).\n\nIf session expired, response will have type: 'session_expired' - user must re-login with password."
+					},
+					"response": []
+				},
+				{
+					"name": "Logout",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-Refresh-Token",
+								"value": "{{refresh_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/auth/logout",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "logout"]
+						},
+						"description": "Logout and revoke the current session.\n\nProvide refresh token in X-Refresh-Token header or Authorization: Bearer header."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Password Management",
+			"item": [
+				{
+					"name": "Change Password",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"token\": \"{{otp_token}}\",\n    \"password\": \"NewSecurePass456\",\n    \"confirmation_password\": \"NewSecurePass456\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/change-password",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "change-password"]
+						},
+						"description": "Change password using the token from Validate OTP (password_reset purpose).\n\nAfter successful password change, all sessions are revoked and user must re-login."
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}

@@ -1,0 +1,45 @@
+authApp
+# General
+.git
+.gitignore
+.gitattributes
+.github/
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Binaries & artifacts
+bin/
+dist/
+out/
+build/
+coverage.*
+*.test
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Go caches
+.cache/
+**/vendor/
+
+# Node/Frontend (if any)
+node_modules/
+npm-debug.log*
+yarn.lock
+pnpm-lock.yaml
+
+# Local env
+.env
+.env.*.local
+.env.local
+
+# Docker
+Dockerfile.*
+docker-compose*.yml
+
+# OS cruft
+.DS_Store
+Thumbs.db

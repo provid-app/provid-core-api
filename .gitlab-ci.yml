@@ -1,0 +1,58 @@
+stages:
+  - build
+
+variables:
+  DOCKER_DRIVER: overlay2
+  DOCKER_TLS_CERTDIR: ""
+  DOCKER_BUILDKIT: "1"
+  DOCKERFILE: deployment/Dockerfile
+  CONTEXT: .
+
+build-push-job:
+  stage: build
+  image: docker:27
+  services:
+    - name: docker:27-dind
+      command: [ "--registry-mirror=https://registry-1.docker.io" ]
+  rules:
+    - if: '$CI_COMMIT_BRANCH'
+    - if: '$CI_COMMIT_TAG'
+  tags: [ ]
+  interruptible: true
+  allow_failure: false
+  before_script:
+    - docker version
+    - echo "Logging into GitLab Container Registry..."
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
+    - docker buildx create --use --driver docker-container
+  script:
+    - |
+      if [ -n "$CI_COMMIT_TAG" ]; then
+        IMAGE_TAG="$CI_COMMIT_TAG"
+      elif [ -n "$CI_COMMIT_BRANCH" ]; then
+        IMAGE_TAG="${CI_COMMIT_REF_SLUG}-${CI_COMMIT_SHORT_SHA}"
+      else
+        IMAGE_TAG="${CI_COMMIT_SHORT_SHA}"
+      fi
+
+      EXTRA_TAGS=""
+      if [ "$CI_COMMIT_BRANCH" = "main" ] && [ -z "$CI_COMMIT_TAG" ]; then
+        EXTRA_TAGS="$EXTRA_TAGS --tag $CI_REGISTRY_IMAGE:latest"
+      fi
+      if [ -n "$CI_COMMIT_BRANCH" ] && [ -z "$CI_COMMIT_TAG" ]; then
+        EXTRA_TAGS="$EXTRA_TAGS --tag $CI_REGISTRY_IMAGE:${CI_COMMIT_REF_SLUG}"
+      fi
+
+      docker buildx build \
+        --file "$DOCKERFILE" \
+        --progress=plain \
+        --build-arg BINARY_NAME=helperApp \
+        --build-arg APP_VERSION="${IMAGE_TAG}" \
+        --build-arg GIT_COMMIT="${CI_COMMIT_SHORT_SHA}" \
+        --build-arg BUILD_DATE="$(date -u +'%Y-%m-%dT%H:%M:%SZ')" \
+        --cache-from type=registry,ref="$CI_REGISTRY_IMAGE:buildcache" \
+        --cache-to   type=registry,ref="$CI_REGISTRY_IMAGE:buildcache",mode=max \
+        --tag "$CI_REGISTRY_IMAGE:$IMAGE_TAG" \
+        $EXTRA_TAGS \
+        --push \
+        "$CONTEXT"
