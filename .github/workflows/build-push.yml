@@ -88,8 +88,9 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
-            cd backend/development/core-service
+            ls
+            cd ~/backend/development/core-service
 
             docker compose pull
-            docker compos down
+            docker compose down
             docker compose up -d
