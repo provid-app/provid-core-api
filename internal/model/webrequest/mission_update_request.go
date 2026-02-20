@@ -14,6 +14,7 @@ type UpdateMissionRequest struct {
 	RewardPoints *float64 `json:"reward_points"`
 	MissionValue *float64 `json:"mission_value"`
 	MissionType  string   `json:"mission_type"`
+	SegmentID    string   `json:"segment_id"`
 }
 
 func (r UpdateMissionRequest) Validate() []data.ValidationErrorData {
@@ -21,9 +22,11 @@ func (r UpdateMissionRequest) Validate() []data.ValidationErrorData {
 		"id":           "ID",
 		"mission_name": "Nama Misi",
 		"mission_type": "Tipe Misi",
+		"segment_id":   "Segmen",
 	}, &r,
 		helper.Field(&r.ID, ozzo.Required),
 		helper.Field(&r.MissionName, ozzo.Required),
 		helper.Field(&r.MissionType, ozzo.Required),
+		helper.Field(&r.SegmentID, ozzo.Required),
 	)
 }

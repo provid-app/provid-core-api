@@ -231,11 +231,71 @@ func (C *CMSServiceImpl) ListMissions(c *gin.Context) (webresponse.JSONResponse,
 		}, http.StatusInternalServerError
 	}
 
+	type segmenLite struct {
+		ID         string `json:"id"`
+		SegmenName string `json:"segmen_name"`
+	}
+	type missionListItem struct {
+		ID           string      `json:"id"`
+		MissionName  string      `json:"mission_name"`
+		Status       string      `json:"status"`
+		Instruction  string      `json:"instruction"`
+		RewardPoints float64     `json:"reward_points"`
+		IsActive     bool        `json:"is_active"`
+		IsScheduled  bool        `json:"is_scheduled"`
+		MissionValue float64     `json:"mission_value"`
+		MissionType  string      `json:"mission_type"`
+		ScheduledAt  time.Time   `json:"scheduled_at"`
+		PublishedAt  time.Time   `json:"published_at"`
+		CreatedAt    time.Time   `json:"created_at"`
+		UpdatedAt    time.Time   `json:"updated_at"`
+		Segmen       *segmenLite `json:"segmen"`
+	}
+
+	items := make([]missionListItem, 0, len(missions))
+	segmenByID := make(map[string]*segmenLite, len(missions))
+	for _, mission := range missions {
+		var segmen *segmenLite
+		segmenID := strings.TrimSpace(mission.SegmentID)
+		if segmenID != "" {
+			if cached, ok := segmenByID[segmenID]; ok {
+				segmen = cached
+			} else {
+				segmenModel, err := C.SegmenRepository.GetSegmenByID(c.Request.Context(), segmenID)
+				if err != nil {
+					if !errors.Is(err, gorm.ErrRecordNotFound) {
+						return webresponse.JSONResponse{Error: true, Message: "Terjadi kesalahan pada server"}, http.StatusInternalServerError
+					}
+					segmenByID[segmenID] = nil
+				} else {
+					segmen = &segmenLite{ID: segmenModel.ID, SegmenName: segmenModel.SegmenName}
+					segmenByID[segmenID] = segmen
+				}
+			}
+		}
+		items = append(items, missionListItem{
+			ID:           mission.ID,
+			MissionName:  mission.MissionName,
+			Status:       mission.Status,
+			Instruction:  mission.Instruction,
+			RewardPoints: mission.RewardPoints,
+			IsActive:     mission.IsActive,
+			IsScheduled:  mission.IsScheduled,
+			MissionValue: mission.MissionValue,
+			MissionType:  mission.MissionType,
+			ScheduledAt:  mission.ScheduledAt,
+			PublishedAt:  mission.PublishedAt,
+			CreatedAt:    mission.CreatedAt,
+			UpdatedAt:    mission.UpdatedAt,
+			Segmen:       segmen,
+		})
+	}
+
 	return webresponse.JSONResponse{
 		Error:   false,
 		Message: "Berhasil mengambil data misi",
 		Data: map[string]any{
-			"items":    missions,
+			"items":    items,
 			"metadata": metadata,
 		},
 	}, http.StatusOK
@@ -256,6 +316,15 @@ func (C *CMSServiceImpl) CreateMission(c *gin.Context, request webrequest.Create
 			Error:   true,
 			Message: "scheduled_at dan published_at tidak boleh diisi bersamaan",
 		}, http.StatusUnprocessableEntity
+	}
+
+	segmenID := strings.TrimSpace(request.SegmentID)
+	_, err := C.SegmenRepository.GetSegmenByID(c.Request.Context(), segmenID)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return webresponse.JSONResponse{Error: true, Message: "Segmen tidak ditemukan"}, http.StatusNotFound
+		}
+		return webresponse.JSONResponse{Error: true, Message: "Terjadi kesalahan pada server"}, http.StatusInternalServerError
 	}
 
 	status := "draf"
@@ -293,6 +362,7 @@ func (C *CMSServiceImpl) CreateMission(c *gin.Context, request webrequest.Create
 		RewardPoints: request.RewardPoints,
 		IsActive:     isActive,
 		IsScheduled:  isScheduled,
+		SegmentID:    segmenID,
 		MissionValue: request.MissionValue,
 		MissionType:  strings.TrimSpace(request.MissionType),
 		ScheduledAt:  scheduledAt,
@@ -326,8 +396,18 @@ func (C *CMSServiceImpl) UpdateMission(c *gin.Context, request webrequest.Update
 		return webresponse.JSONResponse{Error: true, Message: "Terjadi kesalahan pada server"}, http.StatusInternalServerError
 	}
 
+	segmenID := strings.TrimSpace(request.SegmentID)
+	_, err = C.SegmenRepository.GetSegmenByID(c.Request.Context(), segmenID)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return webresponse.JSONResponse{Error: true, Message: "Segmen tidak ditemukan"}, http.StatusNotFound
+		}
+		return webresponse.JSONResponse{Error: true, Message: "Terjadi kesalahan pada server"}, http.StatusInternalServerError
+	}
+
 	mission.MissionName = strings.TrimSpace(request.MissionName)
 	mission.MissionType = strings.TrimSpace(request.MissionType)
+	mission.SegmentID = segmenID
 	if request.Instruction != nil {
 		mission.Instruction = strings.TrimSpace(*request.Instruction)
 	}
