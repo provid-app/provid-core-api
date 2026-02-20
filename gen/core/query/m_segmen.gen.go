@@ -7,6 +7,7 @@ package query
 import (
 	"context"
 	"database/sql"
+	"provid-backend/gen/core/model"
 
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -16,8 +17,6 @@ import (
 	"gorm.io/gen/field"
 
 	"gorm.io/plugin/dbresolver"
-
-	"provid-backend/gen/core/model"
 )
 
 func newMSegman(db *gorm.DB, opts ...gen.DOOption) mSegman {
@@ -33,6 +32,7 @@ func newMSegman(db *gorm.DB, opts ...gen.DOOption) mSegman {
 	_mSegman.Description = field.NewString(tableName, "description")
 	_mSegman.IsActive = field.NewBool(tableName, "is_active")
 	_mSegman.Symbol = field.NewString(tableName, "symbol")
+	_mSegman.TypeSegmen = field.NewString(tableName, "type_segmen")
 	_mSegman.CreatedAt = field.NewTime(tableName, "created_at")
 	_mSegman.UpdatedAt = field.NewTime(tableName, "updated_at")
 
@@ -50,6 +50,7 @@ type mSegman struct {
 	Description field.String
 	IsActive    field.Bool
 	Symbol      field.String
+	TypeSegmen  field.String
 	CreatedAt   field.Time
 	UpdatedAt   field.Time
 
@@ -73,6 +74,7 @@ func (m *mSegman) updateTableName(table string) *mSegman {
 	m.Description = field.NewString(table, "description")
 	m.IsActive = field.NewBool(table, "is_active")
 	m.Symbol = field.NewString(table, "symbol")
+	m.TypeSegmen = field.NewString(table, "type_segmen")
 	m.CreatedAt = field.NewTime(table, "created_at")
 	m.UpdatedAt = field.NewTime(table, "updated_at")
 
@@ -91,12 +93,13 @@ func (m *mSegman) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (m *mSegman) fillFieldMap() {
-	m.fieldMap = make(map[string]field.Expr, 7)
+	m.fieldMap = make(map[string]field.Expr, 8)
 	m.fieldMap["id"] = m.ID
 	m.fieldMap["segmen_name"] = m.SegmenName
 	m.fieldMap["description"] = m.Description
 	m.fieldMap["is_active"] = m.IsActive
 	m.fieldMap["symbol"] = m.Symbol
+	m.fieldMap["type_segmen"] = m.TypeSegmen
 	m.fieldMap["created_at"] = m.CreatedAt
 	m.fieldMap["updated_at"] = m.UpdatedAt
 }

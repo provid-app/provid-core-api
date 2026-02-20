@@ -7,6 +7,7 @@ package query
 import (
 	"context"
 	"database/sql"
+	"provid-backend/gen/core/model"
 
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -16,8 +17,6 @@ import (
 	"gorm.io/gen/field"
 
 	"gorm.io/plugin/dbresolver"
-
-	"provid-backend/gen/core/model"
 )
 
 func newUserProfile(db *gorm.DB, opts ...gen.DOOption) userProfile {

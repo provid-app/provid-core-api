@@ -17,7 +17,6 @@ import (
 	"gorm.io/gen/field"
 
 	"gorm.io/plugin/dbresolver"
-
 )
 
 func newAuthAuditLog(db *gorm.DB, opts ...gen.DOOption) authAuditLog {

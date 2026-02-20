@@ -19,6 +19,7 @@ type MMission struct {
 	RewardPoints float64   `gorm:"column:reward_points;not null" json:"reward_points"`
 	IsActive     bool      `gorm:"column:is_active;not null" json:"is_active"`
 	IsScheduled  bool      `gorm:"column:is_scheduled;not null" json:"is_scheduled"`
+	SegmentID    string    `gorm:"column:segment_id;not null" json:"segment_id"`
 	MissionValue float64   `gorm:"column:mission_value;not null" json:"mission_value"`
 	MissionType  string    `gorm:"column:mission_type;not null" json:"mission_type"`
 	ScheduledAt  time.Time `gorm:"column:scheduled_at" json:"scheduled_at"`

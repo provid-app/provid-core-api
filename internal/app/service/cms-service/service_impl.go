@@ -785,6 +785,7 @@ func (C *CMSServiceImpl) CreateSegmen(c *gin.Context, request webrequest.CreateS
 		Description: strings.TrimSpace(request.Description),
 		IsActive:    isActive,
 		Symbol:      strings.TrimSpace(request.Symbol),
+		TypeSegmen:  strings.TrimSpace(request.TypeSegmen),
 		CreatedAt:   time.Now(),
 		UpdatedAt:   time.Now(),
 	}

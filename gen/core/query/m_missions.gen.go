@@ -7,6 +7,7 @@ package query
 import (
 	"context"
 	"database/sql"
+	"provid-backend/gen/core/model"
 
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -16,8 +17,6 @@ import (
 	"gorm.io/gen/field"
 
 	"gorm.io/plugin/dbresolver"
-
-	"provid-backend/gen/core/model"
 )
 
 func newMMission(db *gorm.DB, opts ...gen.DOOption) mMission {
@@ -35,6 +34,7 @@ func newMMission(db *gorm.DB, opts ...gen.DOOption) mMission {
 	_mMission.RewardPoints = field.NewFloat64(tableName, "reward_points")
 	_mMission.IsActive = field.NewBool(tableName, "is_active")
 	_mMission.IsScheduled = field.NewBool(tableName, "is_scheduled")
+	_mMission.SegmentID = field.NewString(tableName, "segment_id")
 	_mMission.MissionValue = field.NewFloat64(tableName, "mission_value")
 	_mMission.MissionType = field.NewString(tableName, "mission_type")
 	_mMission.ScheduledAt = field.NewTime(tableName, "scheduled_at")
@@ -58,6 +58,7 @@ type mMission struct {
 	RewardPoints field.Float64
 	IsActive     field.Bool
 	IsScheduled  field.Bool
+	SegmentID    field.String
 	MissionValue field.Float64
 	MissionType  field.String
 	ScheduledAt  field.Time
@@ -87,6 +88,7 @@ func (m *mMission) updateTableName(table string) *mMission {
 	m.RewardPoints = field.NewFloat64(table, "reward_points")
 	m.IsActive = field.NewBool(table, "is_active")
 	m.IsScheduled = field.NewBool(table, "is_scheduled")
+	m.SegmentID = field.NewString(table, "segment_id")
 	m.MissionValue = field.NewFloat64(table, "mission_value")
 	m.MissionType = field.NewString(table, "mission_type")
 	m.ScheduledAt = field.NewTime(table, "scheduled_at")
@@ -109,7 +111,7 @@ func (m *mMission) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (m *mMission) fillFieldMap() {
-	m.fieldMap = make(map[string]field.Expr, 13)
+	m.fieldMap = make(map[string]field.Expr, 14)
 	m.fieldMap["id"] = m.ID
 	m.fieldMap["mission_name"] = m.MissionName
 	m.fieldMap["status"] = m.Status
@@ -117,6 +119,7 @@ func (m *mMission) fillFieldMap() {
 	m.fieldMap["reward_points"] = m.RewardPoints
 	m.fieldMap["is_active"] = m.IsActive
 	m.fieldMap["is_scheduled"] = m.IsScheduled
+	m.fieldMap["segment_id"] = m.SegmentID
 	m.fieldMap["mission_value"] = m.MissionValue
 	m.fieldMap["mission_type"] = m.MissionType
 	m.fieldMap["scheduled_at"] = m.ScheduledAt

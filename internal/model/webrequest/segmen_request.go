@@ -15,6 +15,7 @@ type CreateSegmenRequest struct {
 	Description string          `json:"description"`
 	IsActiveRaw json.RawMessage `json:"is_active"`
 	Symbol      string          `json:"symbol"`
+	TypeSegmen  string          `json:"type_segmen"`
 }
 
 func (r CreateSegmenRequest) Validate() []data.ValidationErrorData {
@@ -22,6 +23,7 @@ func (r CreateSegmenRequest) Validate() []data.ValidationErrorData {
 		"segmen_name": "Nama Segmen",
 	}, &r,
 		helper.Field(&r.SegmenName, ozzo.Required),
+		helper.Field(&r.TypeSegmen, ozzo.Required),
 	)
 }
 
@@ -58,6 +60,7 @@ type UpdateSegmenRequest struct {
 	Description string          `json:"description"`
 	IsActiveRaw json.RawMessage `json:"is_active"`
 	Symbol      string          `json:"symbol"`
+	TypeSegmen  string          `json:"type_segmen"`
 }
 
 func (r UpdateSegmenRequest) Validate() []data.ValidationErrorData {
@@ -67,6 +70,7 @@ func (r UpdateSegmenRequest) Validate() []data.ValidationErrorData {
 	}, &r,
 		helper.Field(&r.ID, ozzo.Required),
 		helper.Field(&r.SegmenName, ozzo.Required),
+		helper.Field(&r.TypeSegmen, ozzo.Required),
 	)
 }
 

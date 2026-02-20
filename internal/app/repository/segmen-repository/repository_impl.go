@@ -113,7 +113,7 @@ func (S *SegmenRepositoryImpl) CreateSegmen(ctx context.Context, segmen *model.M
 	// so we fall back to standard GORM which respects the Select clause.
 	m := S.Query.MSegman
 	return m.WithContext(ctx).UnderlyingDB().
-		Select("id", "segmen_name", "description", "is_active", "symbol", "created_at", "updated_at").
+		Select("id", "segmen_name", "description", "is_active", "symbol", "type_segmen", "created_at", "updated_at").
 		Create(segmen).Error
 }
 

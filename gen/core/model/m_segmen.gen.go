@@ -17,6 +17,7 @@ type MSegman struct {
 	Description string    `gorm:"column:description" json:"description"`
 	IsActive    bool      `gorm:"column:is_active;not null" json:"is_active"`
 	Symbol      string    `gorm:"column:symbol" json:"symbol"`
+	TypeSegmen  string    `gorm:"column:type_segmen;not null" json:"type_segmen"`
 	CreatedAt   time.Time `gorm:"column:created_at;not null;default:now()" json:"created_at"`
 	UpdatedAt   time.Time `gorm:"column:updated_at;not null;default:now()" json:"updated_at"`
 }
