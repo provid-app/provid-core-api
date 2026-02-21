@@ -396,6 +396,12 @@ func (C *CMSServiceImpl) UpdateMission(c *gin.Context, request webrequest.Update
 		return webresponse.JSONResponse{Error: true, Message: "Terjadi kesalahan pada server"}, http.StatusInternalServerError
 	}
 
+	if request.ScheduleAt != nil || request.PublishAt != nil {
+
+	} else {
+
+	}
+
 	segmenID := strings.TrimSpace(request.SegmentID)
 	_, err = C.SegmenRepository.GetSegmenByID(c.Request.Context(), segmenID)
 	if err != nil {

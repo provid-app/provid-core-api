@@ -15,6 +15,9 @@ type UpdateMissionRequest struct {
 	MissionValue *float64 `json:"mission_value"`
 	MissionType  string   `json:"mission_type"`
 	SegmentID    string   `json:"segment_id"`
+
+	ScheduleAt *string `json:"schedule_at"`
+	PublishAt  *string `json:"publish_at"`
 }
 
 func (r UpdateMissionRequest) Validate() []data.ValidationErrorData {
